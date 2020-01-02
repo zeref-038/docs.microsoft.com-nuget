@@ -10,16 +10,49 @@ ms.reviewer: anangaur
 
 # Target frameworks
 
-NuGet uses target framework references in a variety of places to specifically identify and isolate framework-dependent components of a package:
+## Frameworks
+Frameworks have names and versions, such as: `Net462` or `NetCoreApp3.0`
 
-- [.nuspec manifest](../reference/nuspec.md): A package can indicate distinct packages to be included in a project depending on the project's target framework.
-- [.nupkg folder name](../create-packages/creating-a-package.md#from-a-convention-based-working-directory): The folders inside a package's `lib` folder can be named according to the target framework, each of which contains the DLLs and other content appropriate to that framework.
-- [packages.config](../reference/packages-config.md): The `targetframework` attribute of a dependency specifies the variant of a package to install.
+## NetStandard is a Framework too!
+[NetStandard](/dotnet/standard/net-standard) is a formal specification of .NET APIs that are intended to be available on all .NET implementations. In NuGet, we also call `NetStandard1.6` and `NetStandard2.0` as Frameworks.
 
-> [!Note]
-> The NuGet client source code that calculates the tables below is found in the following locations:
-> - Supported framework names: [FrameworkConstants.cs](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Frameworks/FrameworkConstants.cs)
-> - Framework precedence and mapping: [DefaultFrameworkMappings.cs](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Frameworks/DefaultFrameworkMappings.cs)
+## Framework Compatibility
+Frameworks are treated as compatible, when:
+
+* Older versions are compatible with newer versions of the same named framework. (net460 is compatible with net472)
+* NetStandards frameworks are said to be compatible with Framework implementations, if that Framework implemented that version of NetStandard. See [.NET Implementations of NetStandard](/dotnet/standard/net-standard#net-implementation-support) 
+
+## Projects and TargetFrameworks
+
+* Projects target one or more frameworks. These are the project's `targetframeworks`.
+
+* Project may also have one or more `fallback targetframeworks`. 
+
+### How Projects specify TargetFrameworks and Fallback TargetFrameworks: 
+| Project Style / NuGet Style | Project's TargetFramework(s) | Project's Fallback TargetFramework(s)     |
+| :------------- | :---------- | :----------- |
+| SDK Style Project / PackageReference | `TargetFramework` or `TargetFrameworks` property | `AssetTargetFramework` property |
+| Project / PackageReference | `TargetFrameworkVersion` property | `AssetTargetFramework` property |
+| UWP Project / PackageReference | `TargetPlatformMinVersion` property | `AssetTargetFramework` property|
+| Project / Packages.Config | `TargetFrameworkVersion` property | n/a |
+
+### Package Install (or Restore) - how TargetFrameworks and Fallback TargetFrameworks are Used
+* When installing a package (or doing a restore), the `targetframeworks` and `fallback targetframeworks`, are used to determine if a package is compatible with the project, and which assets to use from the package.
+
+#### Examples
+| Project TargetFramework(s) | Project Fallback TargetFramework(s) | Package TargetFrameworks | Results |
+| :------------- | :---------- | :----------- | :---- |
+| net472 | n/a | net460 & net482 | Compatible, net460 assets chosen |
+| netcoreapp3.0 | net461 | netcoreapp2.0 | Compatible, netcoreapp2.0 assets chosen |
+| netcoreapp3.0 | net461 | netcoreapp3.0 | Compatible, netcoreapp3.0 assets chosen |
+| netcoreapp3.0 | net461 | net461 | Compatible, with NU1701 warning, net461 assets chosen |
+| netcoreapp3.0 | net461 | netcoreapp3.0 & net461 | Compatible, netcoreapp3.0 assets chosen |
+
+## Packages and TargetFrameworks
+Packages support one or more frameworks. These are the package's `targetframeworks`.
+
+### Package Creation - how TargetFrameworks are Used
+* When building a package, the `targetframeworks` of the project are used to control which targetframeworks the package will be compatible with.
 
 ## Supported frameworks
 
@@ -43,6 +76,34 @@ The NuGet clients support the frameworks in the table below. Equivalents are sho
 | | | net47 |
 | | | net471 |
 | | | net472 |
+| | | net48 |
+| | | net481 |
+| | | net482 |
+.NET Core App | netcoreapp | netcoreapp1.0 |
+| | | netcoreapp1.1 |
+| | | netcoreapp2.0 |
+| | | netcoreapp2.1 |
+| | | netcoreapp2.2 |
+| | | netcoreapp3.0 |
+| | | netcoreapp3.1 |
+.NET Standard | netstandard | netstandard1.0 |
+| | | netstandard1.1 |
+| | | netstandard1.2 |
+| | | netstandard1.3 |
+| | | netstandard1.4 |
+| | | netstandard1.5 |
+| | | netstandard1.6 |
+| | | netstandard2.0 |
+| | | netstandard2.1 |
+Universal Windows Platform | uap | uap10.0 |
+| | | uap10.0.16299 |
+| | | uap10.0.XXXXX (where XXXXX is TargetPlatformMinVersion)|
+Tizen | tizen | tizen3 |
+| | | tizen4 |
+
+## Less Common frameworks 
+| Name | Abbreviation | TFMs/TxMs |
+| ------------- | ------------ | --------- |
 |Microsoft Store (Windows Store) | netcore | netcore [netcore45] |
 | | | netcore45 [win, win8] |
 | | | netcore451 [win81] |
@@ -60,22 +121,6 @@ Windows Phone (SL) | wp | wp [wp7] |
 | | | wp8 |
 | | | wp81 |
 Windows Phone (UWP) | | wpa81 |
-Universal Windows Platform | uap | uap [uap10.0] |
-| | | uap10.0 |
-.NET Standard | netstandard | netstandard1.0 |
-| | | netstandard1.1 |
-| | | netstandard1.2 |
-| | | netstandard1.3 |
-| | | netstandard1.4 |
-| | | netstandard1.5 |
-| | | netstandard1.6 |
-| | | netstandard2.0 |
-.NET Core App | netcoreapp | netcoreapp1.0 |
-| | | netcoreapp1.1 |
-| | | netcoreapp2.0 |
-| | | netcoreapp2.1 |
-Tizen | tizen | tizen3 |
-| | | tizen4 |
 
 ## Deprecated frameworks
 
@@ -120,10 +165,22 @@ The [NuGet Get Nearest Framework Tool](https://aka.ms/s2m3th) simulates what NuG
 
 The `dotnet` series of monikers should be used in NuGet 3.3 and earlier; the `netstandard` moniker syntax should be used in v3.4 and later.
 
+## NuGet & target framework references 
+NuGet uses target framework references in a variety of places to specifically identify and isolate framework-dependent components of a package:
+
+- [.nuspec manifest](../reference/nuspec.md): A package can indicate distinct packages to be included in a project depending on the project's target framework.
+- [.nupkg folder name](../create-packages/creating-a-package.md#from-a-convention-based-working-directory): The folders inside a package's `lib` folder can be named according to the target framework, each of which contains the DLLs and other content appropriate to that framework.
+- [packages.config](../reference/packages-config.md): The `targetframework` attribute of a dependency specifies the variant of a package to install.
+
+> [!Note]
+> The NuGet client source code that calculates the tables below is found in the following locations:
+> - Supported framework names: [FrameworkConstants.cs](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Frameworks/FrameworkConstants.cs)
+> - Framework precedence and mapping: [DefaultFrameworkMappings.cs](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Frameworks/DefaultFrameworkMappings.cs)
+
 ## Portable Class Libraries
 
 > [!Warning]
-> **PCLs are not recommended**. Although PCLs are supported, package authors should support netstandard instead. The .NET Platform Standard is an evolution of PCLs and represents binary portability across platforms using a single moniker that isn't tied to a static library like *portable-a+b+c* monikers.
+> **PCLs are deprecated**. Although PCLs are supported, package authors should support netstandard instead. The .NET Platform Standard is an evolution of PCLs and represents binary portability across platforms using a single moniker that isn't tied to a static library like *portable-a+b+c* monikers.
 
 To define a target framework that refers to multiple child-target-frameworks, the `portable` keyword use used to prefix the list of referenced frameworks. Avoid artificially including extra frameworks that are not directly compiled against because it can lead to unintended side-effects in those frameworks.
 
