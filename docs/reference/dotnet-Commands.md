@@ -21,7 +21,16 @@ For the complete command reference on `dotnet` CLI, see [.NET Core command-line 
 - [**dotnet remove package**](/dotnet/core/tools/dotnet-remove-package): Removes a package reference from the project file.
 - [**dotnet restore**](/dotnet/core/tools/dotnet-restore?tabs=netcore2x): Restores the dependencies and tools of a project. As of NuGet 4.0, this runs the same code as `nuget restore`.
 - [**dotnet nuget locals**](/dotnet/core/tools/dotnet-nuget-locals): Lists locations of the *global-packages*, *http-cache*, and *temp* folders and clears the contents of those folders.
+
+## NuGet configuration
 - [**dotnet new nugetconfig**](/dotnet/core/tools/dotnet-new): Creates a [`nuget.config`](../reference/nuget-config-file.md) file to configure NuGet's behavior.
+- [**dotnet nuget list source**](/dotnet/core/tools/dotnet-nuget-list-source): Lists sources located in the user scope configuration file or a specified configuration file.
+- [**dotnet nuget add source**](/dotnet/core/tools/dotnet-nuget-add-source): Adds a new source in the user scope configuration file or a specified configuration file.
+- [**dotnet nuget update source**](/dotnet/core/tools/dotnet-nuget-update-source): Updates a named source in the user scope configuration file or a specified configuration file.
+- [**dotnet nuget remove source**](/dotnet/core/tools/dotnet-nuget-remove-source): Removes a named source in the user scope configuration file or a specified configuration file.
+- [**dotnet nuget disable source**](/dotnet/core/tools/dotnet-nuget-disable-source): Disables a named source in the user scope configuration file or a specified configuration file.
+- [**dotnet nuget enable source**](/dotnet/core/tools/dotnet-nuget-enable-source): Enables a named source in the user scope configuration file or a specified configuration file.
+
 
 ## Package creation
 
